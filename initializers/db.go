@@ -13,7 +13,7 @@ import (
 var DB *gorm.DB
 
 func getGORMDatabaseUrl(params map[string]string) string {
-	var dbUrl = os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@tcp(" + os.Getenv("DB_URL") + ")/" + os.Getenv("DB_NAME")
+	var dbUrl = os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@tcp(" + os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT") + ")/" + os.Getenv("DB_NAME")
 	queryParams := ""
 
 	for k, v := range params {

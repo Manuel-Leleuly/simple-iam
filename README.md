@@ -48,10 +48,11 @@ make run
 
 ## Environment variables
 
-| Name          | Optional | Description                                         |
-| ------------- | -------- | --------------------------------------------------- |
-| DB_USER       | no       | username used in MySQL DB                           |
-| DB_PASSWORD   | no       | password used in MySQL DB                           |
-| DB_URL        | no       | url for the MySQL DB used (example: localhost:3306) |
-| DB_NAME       | no       | the name of the database                            |
-| CLIENT_SECRET | no       | the secret code for client                          |
+| Name          | Optional | Description                |
+| ------------- | -------- | -------------------------- |
+| DB_USER       | no       | username used in MySQL DB  |
+| DB_PASSWORD   | no       | password used in MySQL DB  |
+| DB_HOST       | no       | host used in MySQL         |
+| DB_PORT       | no       | port used in MySQL         |
+| DB_NAME       | no       | the name of the database   |
+| CLIENT_SECRET | no       | the secret code for client |

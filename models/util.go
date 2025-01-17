@@ -12,5 +12,4 @@ type Name struct {
 type TimeRecord struct {
 	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime;not null;<-create" json:"created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at;autoCreateTime;not null;autoUpdateTime" json:"updated_at"`
-	DeletedAt time.Time `gorm:"column:deleted_at" json:"deleted_at"`
 }
