@@ -22,9 +22,9 @@ func Login(c *gin.Context) {
 
 	// Find the user
 	var user models.User
-	initializers.DB.First(&user, "email = ?", reqBody.Email)
+	result := initializers.DB.First(&user, "email = ?", reqBody.Email)
 
-	if user.Id == "" {
+	if result.Error != nil || user.Id == "" {
 		failedLoginJson(c)
 		return
 	}

@@ -18,6 +18,8 @@ func main() {
 
 	server.POST("/login", controllers.Login)
 
+	server.GET("/token/refresh", middlewares.CheckRefreshToken, controllers.RefreshToken)
+
 	server.POST("/users", controllers.CreateUser)
 	server.GET("/users", middlewares.CheckAccessToken, controllers.GetUserList)
 	server.GET("/users/:userId", middlewares.CheckAccessToken, controllers.GetUserDetail)
