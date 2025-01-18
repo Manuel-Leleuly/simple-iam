@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/Manuel-Leleuly/simple-iam/initializers"
@@ -14,9 +15,16 @@ import (
 
 func CheckAccessToken(c *gin.Context) {
 	// Get access token from header
-	accessToken := c.GetHeader("Authorization")
+	bearerToken := c.GetHeader("Authorization")
+
+	if !strings.HasPrefix(bearerToken, "Bearer ") {
+		authErrorMessage(c)
+		return
+	}
 
 	// validate the token
+	// TODO: find a better way to do this
+	accessToken := strings.ReplaceAll(bearerToken, "Bearer ", "")
 	token, err := jwt.Parse(accessToken, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header)
@@ -32,8 +40,9 @@ func CheckAccessToken(c *gin.Context) {
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		// check token expiration
 		if float64(time.Now().Unix()) > claims["exp"].(float64) {
-			authErrorMessage(c)
-			return
+			c.AbortWithStatusJSON(http.StatusUnauthorized, models.ErrorMessage{
+				Message: "Token is expired",
+			})
 		}
 
 		// find the user with the same id as the id stored in token
@@ -55,7 +64,7 @@ func CheckAccessToken(c *gin.Context) {
 
 // helpers
 func authErrorMessage(c *gin.Context) {
-	c.JSON(http.StatusUnauthorized, models.ErrorMessage{
+	c.AbortWithStatusJSON(http.StatusUnauthorized, models.ErrorMessage{
 		Message: "Unauthorized access",
 	})
 }

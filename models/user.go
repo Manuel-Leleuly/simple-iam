@@ -14,6 +14,11 @@ type UserRequest struct {
 	Password string `gorm:"column:password;not null" json:"password"`
 }
 
+type UserUpdateRequest struct {
+	Name
+	Username string `gorm:"column:username;not null" json:"username"`
+}
+
 type User struct {
 	Id string `gorm:"primary_key;column:id;not null;<-create" json:"id"`
 	Name

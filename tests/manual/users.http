@@ -1,12 +1,40 @@
 ### Create user
-POST http://localhost:8080/users
+POST http://localhost:3005/users
 Content-Type: application/json
 Accept: application/json
 
 {
     "first_name": "John",
     "last_name": "Doe",
-    "username": "johndoe",
+    "username": "john-doe",
     "email": "johndoe@example.com",
     "password": "johndoe123"
 }
+
+### Get user list
+GET http://localhost:3005/users
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {access_token}
+
+### Get user detail
+GET http://localhost:3005/users/{userId}
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {access_token}
+
+### Update user
+PATCH http://localhost:3005/users/{userId}
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {access_token}
+
+{
+    "first_name": "Manuel"
+}
+
+### Delete user
+DELETE http://localhost:3005/users/{userId}
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {access_token}

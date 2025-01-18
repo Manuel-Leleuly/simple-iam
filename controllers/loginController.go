@@ -3,13 +3,11 @@ package controllers
 import (
 	"fmt"
 	"net/http"
-	"os"
-	"time"
 
+	"github.com/Manuel-Leleuly/simple-iam/helpers"
 	"github.com/Manuel-Leleuly/simple-iam/initializers"
 	"github.com/Manuel-Leleuly/simple-iam/models"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -39,41 +37,25 @@ func Login(c *gin.Context) {
 	}
 
 	// Generate tokens
-	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":    user.Id,
-		"email": user.Email,
-		"exp":   time.Now().Add(time.Hour).Unix(),
-	})
-
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":    user.Id,
-		"email": user.Email,
-		"exp":   time.Now().Add(time.Hour * 24).Unix(),
-	})
-
-	// Sign the tokens
-	accessTokenString, err := accessToken.SignedString([]byte(os.Getenv("CLIENT_SECRET")))
+	accessTokenString, err := helpers.CreateAccessToken(user)
 	if err != nil {
 		failedLoginJson(c)
 		return
 	}
 
-	refreshTokenString, err := refreshToken.SignedString([]byte(os.Getenv("CLIENT_SECRET")))
+	refreshTokenString, err := helpers.CreateRefreshToken(accessTokenString)
 	if err != nil {
 		failedLoginJson(c)
 		return
 	}
-
-	// set as cookies (TBD)
-	// c.SetSameSite(http.SameSiteLaxMode)
-	// c.SetCookie("access_token", accessTokenString, 3600, "", "", false, true)
-	// c.SetCookie("refresh_token", refreshTokenString, 3600, "", "", false, true)
 
 	// send the result
-	c.JSON(http.StatusOK, models.TokenResponse{
-		Status:       "success",
-		AccessToken:  accessTokenString,
-		RefreshToken: refreshTokenString,
+	c.JSON(http.StatusOK, gin.H{
+		"data": models.TokenResponse{
+			Status:       "success",
+			AccessToken:  accessTokenString,
+			RefreshToken: refreshTokenString,
+		},
 	})
 }
 

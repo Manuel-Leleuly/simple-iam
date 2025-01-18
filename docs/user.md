@@ -40,9 +40,8 @@ Request Header:
 
 Query Parameter:
 
-- id: string
-- first_name: string
-- last_name: string
+- firstName: string
+- lastName: string
 - email: string
 - offset: number, default to 0
 - limit: number, default to 10
@@ -106,8 +105,7 @@ Request Body:
 {
   "first_name": "John",
   "last_name": "Doe",
-  "username": "johndoe",
-  "email": "johndoe@example.com"
+  "username": "johndoe"
 }
 ```
 

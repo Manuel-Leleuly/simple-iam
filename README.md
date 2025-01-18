@@ -24,7 +24,7 @@ go run main.go
 go run .
 ```
 
-### Production
+### Production (TBD)
 
 If you want to run the production version of this project locally, you can do so by first building it:
 
