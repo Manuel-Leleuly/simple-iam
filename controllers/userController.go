@@ -9,6 +9,7 @@ import (
 	"github.com/Manuel-Leleuly/simple-iam/helpers"
 	"github.com/Manuel-Leleuly/simple-iam/initializers"
 	"github.com/Manuel-Leleuly/simple-iam/models"
+	"github.com/Manuel-Leleuly/simple-iam/validation"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -19,6 +20,15 @@ func CreateUser(c *gin.Context) {
 
 	if err := c.Bind(&reqBody); err != nil {
 		userCreationErrorMessage(c)
+		return
+	}
+
+	// validate request body
+	validate := validation.GetValidator()
+	if err := validate.Struct(reqBody); err != nil {
+		c.JSON(http.StatusBadRequest, models.ValidationErrorMessage{
+			Message: validation.TranslateValidationErrors(err),
+		})
 		return
 	}
 
@@ -42,7 +52,7 @@ func CreateUser(c *gin.Context) {
 
 	// Create the newUser
 	newUser := models.User{
-		Name:     reqBody.Name,
+		Name:     models.Name(reqBody.NameRequest),
 		Username: reqBody.Username,
 		Email:    reqBody.Email,
 		Password: string(hash),
@@ -142,6 +152,15 @@ func UpdateUser(c *gin.Context) {
 	if err := c.Bind(&reqBody); err != nil {
 		fmt.Println("result error 1: ", err)
 		updateUserErrorMessage(c, idParam)
+		return
+	}
+
+	// validate request body
+	validate := validation.GetValidator()
+	if err := validate.Struct(reqBody); err != nil {
+		c.JSON(http.StatusBadRequest, models.ValidationErrorMessage{
+			Message: validation.TranslateValidationErrors(err),
+		})
 		return
 	}
 

@@ -8,15 +8,15 @@ import (
 )
 
 type UserRequest struct {
-	Name
-	Username string `gorm:"column:username;not null" json:"username"`
-	Email    string `gorm:"column:email;not null" json:"email"`
-	Password string `gorm:"column:password;not null" json:"password"`
+	NameRequest
+	Username string `gorm:"column:username;not null" json:"username" validate:"required,username"`
+	Email    string `gorm:"column:email;not null" json:"email" validate:"email"`
+	Password string `gorm:"column:password;not null" json:"password" validate:"password"`
 }
 
 type UserUpdateRequest struct {
-	Name
-	Username string `gorm:"column:username;not null" json:"username"`
+	NameRequest
+	Username string `gorm:"column:username;not null" json:"username" validate:"username"`
 }
 
 type User struct {
