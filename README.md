@@ -40,6 +40,7 @@ make run
 
 ## Development Requirements
 
+- Go (this project was created using Go 1.23.3)
 - MySQL
 - Docker
 - Docker Compose

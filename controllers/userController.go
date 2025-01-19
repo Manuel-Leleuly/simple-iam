@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/Manuel-Leleuly/simple-iam/constants"
+	"github.com/Manuel-Leleuly/simple-iam/helpers"
 	"github.com/Manuel-Leleuly/simple-iam/initializers"
 	"github.com/Manuel-Leleuly/simple-iam/models"
 	"github.com/gin-gonic/gin"
@@ -99,9 +100,18 @@ func GetUserList(c *gin.Context) {
 		return
 	}
 
+	// get paging
+	paging, err := helpers.GetPagination(c.Request.Host + c.Request.URL.String())
+	if err != nil {
+		fmt.Println(err)
+		getUserListErrorMessage(c)
+		return
+	}
+
 	// return the result
-	c.JSON(http.StatusOK, gin.H{
-		"data": users,
+	c.JSON(http.StatusOK, models.WithPagination{
+		Data:   users,
+		Paging: *paging,
 	})
 }
 

@@ -13,10 +13,6 @@ Request Body:
 }
 ```
 
-Response Header:
-
-- Set-Cookie: access_token, refresh_token
-
 Response Body:
 
 ```json
@@ -36,10 +32,6 @@ Endpoint: POST /api/login/refresh
 Request Header:
 
 - Authorization: refresh_token
-
-Response Header:
-
-- Set-Cookie: access_token, refresh_token
 
 Response Body:
 
