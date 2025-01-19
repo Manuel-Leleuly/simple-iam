@@ -12,10 +12,10 @@ Accept: application/json
 }
 
 ### Get user list
-GET http://localhost:3005/users?firstName=a
+GET http://localhost:3005/users?firstName=a&offset=20
 Content-Type: application/json
 Accept: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvaG5kb2VAZXhhbXBsZS5jb20iLCJleHAiOjE3MzcyNjE5NDksImlkIjoiMmU5NzUzZDQxNzRjNDViNDg2OGI3YTg3YWNmZGQ3YzQifQ.q-p6MT2_ep33tWyjZU8ucNhQRqcGLdcQbA3JuQK_STQ
+Authorization: Bearer {access_token}
 
 ### Get user detail
 GET http://localhost:3005/users/{userId}

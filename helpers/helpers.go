@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -8,30 +9,39 @@ import (
 	"github.com/Manuel-Leleuly/simple-iam/constants"
 	"github.com/Manuel-Leleuly/simple-iam/initializers"
 	"github.com/Manuel-Leleuly/simple-iam/models"
+	"github.com/gin-gonic/gin"
 )
 
+func GetFullUrl(c *gin.Context) string {
+	scheme := "http"
+	if c.Request.TLS != nil {
+		scheme = "https"
+	}
+
+	return scheme + "://" + c.Request.Host + c.Request.URL.String()
+}
+
 func GetPagination(fullUrl string) (*models.Pagination, error) {
-	url, err := url.Parse(fullUrl)
+	selectedUrl, err := url.Parse(fullUrl)
+	fmt.Println("full url:", fullUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	next := url.Path
-	prev := url.Path
-	queryParams := url.Query()
+	next := selectedUrl.Path
+	prev := selectedUrl.Path
+	queryParams := selectedUrl.Query()
+
+	nextQueryParams := url.Values{}
+	prevQueryParams := url.Values{}
+
 	for k, v := range queryParams {
 		if k == "offset" {
 			continue
 		}
 
-		// TODO: find a better way to check the question mark
-		if strings.Contains(next, "?") {
-			next += "&" + k + "=" + strings.Join(v, ",")
-			prev += "&" + k + "=" + strings.Join(v, ",")
-		} else {
-			next += "?" + k + "=" + strings.Join(v, ",")
-			prev += "?" + k + "=" + strings.Join(v, ",")
-		}
+		nextQueryParams.Add(k, strings.Join(v, ","))
+		prevQueryParams.Add(k, strings.Join(v, ","))
 	}
 
 	selectedOffset := constants.DEFAULT_OFFSET
@@ -50,18 +60,18 @@ func GetPagination(fullUrl string) (*models.Pagination, error) {
 		}
 	}
 
-	if strings.Contains(next, "?") {
-		next += "&offset=" + strconv.Itoa(selectedOffset+selectedLimit)
-	} else {
-		next += "?offset=" + strconv.Itoa(selectedOffset+selectedLimit)
-	}
+	nextQueryParams.Add("offset", strconv.Itoa(selectedOffset+selectedLimit))
 
 	if selectedOffset > selectedLimit {
-		if strings.Contains(prev, "?") {
-			prev += "&offset" + strconv.Itoa(selectedOffset-selectedLimit)
-		} else {
-			prev += "?offset" + strconv.Itoa(selectedOffset-selectedLimit)
-		}
+		prevQueryParams.Add("offset", strconv.Itoa(selectedOffset-selectedLimit))
+	}
+
+	if len(nextQueryParams) > 0 {
+		next = next + "?" + nextQueryParams.Encode()
+	}
+
+	if len(prevQueryParams) > 0 {
+		prev = prev + "?" + prevQueryParams.Encode()
 	}
 
 	// reset prev to empty string if offset is 0

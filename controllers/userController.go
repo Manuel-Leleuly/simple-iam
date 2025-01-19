@@ -101,7 +101,7 @@ func GetUserList(c *gin.Context) {
 	}
 
 	// get paging
-	paging, err := helpers.GetPagination(c.Request.Host + c.Request.URL.String())
+	paging, err := helpers.GetPagination(helpers.GetFullUrl(c))
 	if err != nil {
 		fmt.Println(err)
 		getUserListErrorMessage(c)
