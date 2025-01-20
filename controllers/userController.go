@@ -52,7 +52,10 @@ func CreateUser(c *gin.Context) {
 
 	// Create the newUser
 	newUser := models.User{
-		Name:     models.Name(reqBody.NameRequest),
+		Name: models.Name{
+			FirstName: reqBody.FirstName,
+			LastName:  reqBody.LastName,
+		},
 		Username: reqBody.Username,
 		Email:    reqBody.Email,
 		Password: string(hash),
@@ -192,18 +195,9 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	// get the updated user
-	var updatedUser models.User
-
-	result = initializers.DB.Where("id = ?", user.Id).First(&updatedUser)
-	if result.Error != nil {
-		updateUserErrorMessage(c, idParam)
-		return
-	}
-
 	// return the updated user
 	c.JSON(http.StatusOK, gin.H{
-		"data": updatedUser,
+		"data": user,
 	})
 }
 

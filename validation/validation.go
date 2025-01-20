@@ -15,7 +15,6 @@ func GetValidator() *validator.Validate {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	// register alias
-	validate.RegisterAlias("email", "required,email")
 	validate.RegisterAlias("username", "alphanum,min=5")
 	validate.RegisterAlias("name", "alpha,min=2,max=10")
 	validate.RegisterAlias("password", "required,min=8")
@@ -25,9 +24,9 @@ func GetValidator() *validator.Validate {
 
 	RegisterTranslation(validate, "required", "{0} is required!")
 	RegisterTranslation(validate, "email", "{0} incorrect email format")
-	RegisterTranslation(validate, "username", "{0} must be alpha, min length 2, max length 10")
+	RegisterTranslation(validate, "name", "{0} must be alpha, min length 2, max length 10")
 	RegisterTranslation(validate, "password", "{0} is required, min length 8")
-	RegisterTranslation(validate, "name", "{0} must be alphanumeric, min length 5")
+	RegisterTranslation(validate, "username", "{0} must be alphanumeric, min length 5")
 
 	return validate
 }
