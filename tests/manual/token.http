@@ -1,5 +1,5 @@
 ### refresh token
-GET http://localhost:3005/token/refresh
+GET http://localhost:3005/iam/v1/token/refresh
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {refresh_token}

@@ -11,6 +11,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Login			godoc
+// @Summary 		Login
+// @Description 	Login
+// @Tags			Auth
+// @Router			/iam/v1/login [post]
+// @Accept			json
+// @Produce			json
+// @Param			requestBody	body		models.Login{}		true	"Request Body"
+// @Success			200			{object}	models.Response[models.TokenResponse]{}
+// @Failure			400			{object}	models.ErrorMessage{}
 func Login(c *gin.Context) {
 	// Get the email and password from request body
 	var reqBody models.Login
@@ -50,8 +60,8 @@ func Login(c *gin.Context) {
 	}
 
 	// send the result
-	c.JSON(http.StatusOK, gin.H{
-		"data": models.TokenResponse{
+	c.JSON(http.StatusOK, models.Response[models.TokenResponse]{
+		Data: models.TokenResponse{
 			Status:       "success",
 			AccessToken:  accessTokenString,
 			RefreshToken: refreshTokenString,

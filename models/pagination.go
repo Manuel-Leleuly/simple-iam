@@ -5,7 +5,11 @@ type Pagination struct {
 	Prev string `json:"prev"`
 }
 
-type WithPagination struct {
-	Data   any        `json:"data"`
+type Response[T any] struct {
+	Data T `json:"data"`
+}
+
+type WithPagination[T any] struct {
+	Data   T          `json:"data"`
 	Paging Pagination `json:"paging"`
 }

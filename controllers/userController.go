@@ -14,6 +14,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// CreateUser		godoc
+// @Summary 		Create user
+// @Description 	Create a user
+// @Tags			User
+// @Router			/iam/v1/users [post]
+// @Accept			json
+// @Produce			json
+// @Param			requestBody	body		models.UserRequest{}		true	"Request Body"
+// @Success			200			{object}	models.Response[models.User]{}
+// @Failure			400			{object}	models.ErrorMessage{}
 func CreateUser(c *gin.Context) {
 	// Get data from request body
 	var reqBody models.UserRequest
@@ -73,6 +83,21 @@ func CreateUser(c *gin.Context) {
 	})
 }
 
+// GetUserList		godoc
+// @Summary 		Get user list
+// @Description 	Get all users from database
+// @Security 		ApiKeyAuth
+// @Tags			User
+// @Router			/iam/v1/users [get]
+// @Accept			json
+// @Produce			json
+// @Param			firstName	query 		string		false	"search by first name"
+// @Param			lastName	query		string		false	"search by last name"
+// @Param			email		query		string		false	"search by email"
+// @Param			offset		query		string		false	"default to 0"
+// @Param			limit		query		string		false	"default to 10"
+// @Success			200			{object}	models.WithPagination[[]models.User]{}
+// @Failure			400			{object}	models.ErrorMessage{}
 func GetUserList(c *gin.Context) {
 	// get all query params
 	firstName := c.Query("firstName")
@@ -122,12 +147,23 @@ func GetUserList(c *gin.Context) {
 	}
 
 	// return the result
-	c.JSON(http.StatusOK, models.WithPagination{
+	c.JSON(http.StatusOK, models.WithPagination[[]models.User]{
 		Data:   users,
 		Paging: *paging,
 	})
 }
 
+// GetUserDetail	godoc
+// @Summary 		Get user detail
+// @Description 	Get the details of a user
+// @Security 		ApiKeyAuth
+// @Tags			User
+// @Router			/iam/v1/users/{userId} [get]
+// @Accept			json
+// @Produce			json
+// @Param			userId		path 		string		true	"User ID"
+// @Success			200			{object}	models.Response[models.User]{}
+// @Failure			400			{object}	models.ErrorMessage{}
 func GetUserDetail(c *gin.Context) {
 	// get id param
 	idParam := c.Param("userId")
@@ -142,11 +178,24 @@ func GetUserDetail(c *gin.Context) {
 	}
 
 	// return the result
-	c.JSON(http.StatusOK, gin.H{
-		"data": user,
+	c.JSON(http.StatusOK, models.Response[models.User]{
+		Data: user,
 	})
 }
 
+// UpdateUser		godoc
+// @Summary 		Update user
+// @Description 	Update the user
+// @Security 		ApiKeyAuth
+// @Tags			User
+// @Router			/iam/v1/users/{userId} [patch]
+// @Accept			json
+// @Produce			json
+// @Param			userId		path 		string							true	"User ID"
+// @Param			requestBody	body		models.UserUpdateRequest{}		true	"Request Body"
+// @Success			200			{object}	models.Response[models.User]{}
+// @Failure			400			{object}	models.ErrorMessage{}
+// @Failure			404			{object}	models.ErrorMessage{}
 func UpdateUser(c *gin.Context) {
 	// get request body and param from url
 	var reqBody models.UserUpdateRequest
@@ -196,11 +245,23 @@ func UpdateUser(c *gin.Context) {
 	}
 
 	// return the updated user
-	c.JSON(http.StatusOK, gin.H{
-		"data": user,
+	c.JSON(http.StatusOK, models.Response[models.User]{
+		Data: user,
 	})
 }
 
+// DeleteUser		godoc
+// @Summary 		Delete user
+// @Description 	Delete a user
+// @Security 		ApiKeyAuth
+// @Tags			User
+// @Router			/iam/v1/users/{userId} [delete]
+// @Accept			json
+// @Produce			json
+// @Param			userId		path 		string		true	"User ID"
+// @Success			200			{object}	models.Response[string]{}
+// @Failure			400			{object}	models.ErrorMessage{}
+// @Failure			404			{object}	models.ErrorMessage{}
 func DeleteUser(c *gin.Context) {
 	// get id param
 	idParam := c.Param("userId")
@@ -224,10 +285,8 @@ func DeleteUser(c *gin.Context) {
 	}
 
 	// return response
-	c.JSON(http.StatusOK, gin.H{
-		"data": map[string]bool{
-			"success": true,
-		},
+	c.JSON(http.StatusOK, models.Response[string]{
+		Data: "success",
 	})
 }
 
