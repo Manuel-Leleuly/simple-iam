@@ -1,13 +1,11 @@
 package helpers
 
 import (
-	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
 
 	"github.com/Manuel-Leleuly/simple-iam/constants"
-	"github.com/Manuel-Leleuly/simple-iam/initializers"
 	"github.com/Manuel-Leleuly/simple-iam/models"
 	"github.com/gin-gonic/gin"
 )
@@ -21,9 +19,8 @@ func GetFullUrl(c *gin.Context) string {
 	return scheme + "://" + c.Request.Host + c.Request.URL.String()
 }
 
-func GetPagination(fullUrl string) (*models.Pagination, error) {
+func GetPagination(fullUrl string, hasNext bool) (*models.Pagination, error) {
 	selectedUrl, err := url.Parse(fullUrl)
-	fmt.Println("full url:", fullUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -79,12 +76,8 @@ func GetPagination(fullUrl string) (*models.Pagination, error) {
 		prev = ""
 	}
 
-	// TODO: improve this
-	// check if there is actually a next data
-	var user models.User
-
-	result := initializers.DB.Offset(selectedOffset + 1).First(&user)
-	if result.Error != nil || user.Id == "" {
+	// reset next to empty string if there is no next data
+	if !hasNext {
 		next = ""
 	}
 

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/Manuel-Leleuly/simple-iam/helpers"
@@ -41,7 +40,6 @@ func Login(c *gin.Context) {
 
 	// Check password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(reqBody.Password)); err != nil {
-		fmt.Println(err)
 		failedLoginJson(c)
 		return
 	}

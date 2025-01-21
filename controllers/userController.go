@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -119,7 +118,8 @@ func GetUserList(c *gin.Context) {
 	// get users
 	var users []models.User
 
-	dbQuery := initializers.DB.Offset(selectedOffset).Limit(selectedLimit)
+	// dbQuery := initializers.DB.Offset(selectedOffset).Limit(selectedLimit)
+	dbQuery := initializers.DB.Limit(selectedLimit)
 
 	if len(firstName) > 0 {
 		dbQuery = dbQuery.Where("first_name like ?", "%"+firstName+"%")
@@ -131,17 +131,24 @@ func GetUserList(c *gin.Context) {
 		dbQuery = dbQuery.Where("email = ?", email)
 	}
 
-	result := dbQuery.Find(&users)
+	result := dbQuery.Offset(selectedOffset).Find(&users)
 
 	if result.Error != nil {
 		getUserListErrorMessage(c)
 		return
 	}
 
+	// check if has next set of data
+	var user models.User
+	hasNext := true
+	result = dbQuery.Offset(selectedOffset + selectedLimit + 1).First(&user)
+	if result.Error != nil || user.Id == "" {
+		hasNext = false
+	}
+
 	// get paging
-	paging, err := helpers.GetPagination(helpers.GetFullUrl(c))
+	paging, err := helpers.GetPagination(helpers.GetFullUrl(c), hasNext)
 	if err != nil {
-		fmt.Println(err)
 		getUserListErrorMessage(c)
 		return
 	}
@@ -202,7 +209,6 @@ func UpdateUser(c *gin.Context) {
 	idParam := c.Param("userId")
 
 	if err := c.Bind(&reqBody); err != nil {
-		fmt.Println("result error 1: ", err)
 		updateUserErrorMessage(c, idParam)
 		return
 	}
