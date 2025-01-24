@@ -2,7 +2,6 @@ package unit
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -74,7 +73,6 @@ func TestLoginFailed(t *testing.T) {
 	var responseBody models.ErrorMessage
 	err = json.Unmarshal(body, &responseBody)
 	assert.Nil(t, err)
-	fmt.Printf("%+v\n", responseBody)
 
 	assert.Equal(t, "invalid email and/or password", responseBody.Message)
 
@@ -102,7 +100,6 @@ func TestLoginFailed(t *testing.T) {
 
 	err = json.Unmarshal(body, &responseBody)
 	assert.Nil(t, err)
-	fmt.Printf("%+v\n", responseBody)
 
 	assert.Equal(t, "invalid email and/or password", responseBody.Message)
 }

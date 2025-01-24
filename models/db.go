@@ -2,8 +2,8 @@ package models
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -68,9 +68,10 @@ func (d *DBInstance) CheckDBConnection(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, ErrorMessage{
 			Message: "DB is not initialized",
 		})
+	} else {
+		c.Next()
 	}
 
-	c.Next()
 }
 
 func (d *DBInstance) MakeHTTPHandleFunc(f ApiFunc) gin.HandlerFunc {
@@ -86,18 +87,11 @@ func (d *DBInstance) MakeHTTPHandleFunc(f ApiFunc) gin.HandlerFunc {
 // helpers
 func getGORMDatabaseUrl(dbName string, params map[string]string) string {
 	var dbUrl = os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@tcp(" + os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT") + ")/" + dbName
-	queryParams := ""
+	queryParams := url.Values{}
 
 	for k, v := range params {
-		selectedParam := k + "=" + v
-		if queryParams == "" {
-			queryParams = "?" + selectedParam
-		} else {
-			queryParams += "&" + selectedParam
-		}
+		queryParams.Add(k, v)
 	}
 
-	fmt.Println("db url:", dbUrl, ", query params:", queryParams)
-
-	return dbUrl + queryParams
+	return dbUrl + "?" + queryParams.Encode()
 }
