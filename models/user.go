@@ -21,7 +21,10 @@ func (u *User) TableName() string {
 }
 
 func (u *User) BeforeCreate(db *gorm.DB) error {
-	u.Id = strings.ReplaceAll(uuid.New().String(), "-", "")
+	// this is to prevent changing the id of test user
+	if u.Id == "" {
+		u.Id = strings.ReplaceAll(uuid.New().String(), "-", "")
+	}
 	return nil
 }
 

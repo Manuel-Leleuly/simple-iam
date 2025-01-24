@@ -1,12 +1,12 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/Manuel-Leleuly/simple-iam/constants"
 	"github.com/Manuel-Leleuly/simple-iam/helpers"
-	"github.com/Manuel-Leleuly/simple-iam/initializers"
 	"github.com/Manuel-Leleuly/simple-iam/models"
 	"github.com/Manuel-Leleuly/simple-iam/validation"
 	"github.com/gin-gonic/gin"
@@ -23,40 +23,34 @@ import (
 // @Param			requestBody	body		models.UserRequest{}		true	"Request Body"
 // @Success			200			{object}	models.Response[models.User]{}
 // @Failure			400			{object}	models.ErrorMessage{}
-func CreateUser(c *gin.Context) {
+func CreateUser(d *models.DBInstance, c *gin.Context) (statusCode int, err error) {
 	// Get data from request body
 	var reqBody models.UserRequest
 
 	if err := c.Bind(&reqBody); err != nil {
-		userCreationErrorMessage(c)
-		return
+		return createUserFailed()
 	}
 
 	// validate request body
 	validate := validation.GetValidator()
 	if err := validate.Struct(reqBody); err != nil {
-		c.JSON(http.StatusBadRequest, models.ValidationErrorMessage{
+		c.AbortWithStatusJSON(http.StatusBadRequest, models.ValidationErrorMessage{
 			Message: validation.TranslateValidationErrors(err),
 		})
-		return
 	}
 
 	// check if email is already used
 	var user models.User
-	initializers.DB.First(&user, "email = ?", reqBody.Email)
+	d.DB.First(&user, "email = ?", reqBody.Email)
 
 	if user.Id != "" {
-		c.JSON(http.StatusBadRequest, models.ErrorMessage{
-			Message: "Email already used",
-		})
-		return
+		return http.StatusBadRequest, errors.New("email already used")
 	}
 
 	// Hash the password
 	hash, err := bcrypt.GenerateFromPassword([]byte(reqBody.Password), bcrypt.DefaultCost)
 	if err != nil {
-		userCreationErrorMessage(c)
-		return
+		return createUserFailed()
 	}
 
 	// Create the newUser
@@ -69,17 +63,18 @@ func CreateUser(c *gin.Context) {
 		Email:    reqBody.Email,
 		Password: string(hash),
 	}
-	result := initializers.DB.Create(&newUser)
+	result := d.DB.Create(&newUser)
 
 	if result.Error != nil {
-		userCreationErrorMessage(c)
-		return
+		return createUserFailed()
 	}
 
 	// Send the result
 	c.JSON(http.StatusOK, gin.H{
 		"data": newUser,
 	})
+
+	return http.StatusOK, nil
 }
 
 // GetUserList		godoc
@@ -97,7 +92,7 @@ func CreateUser(c *gin.Context) {
 // @Param			limit		query		string		false	"default to 10"
 // @Success			200			{object}	models.WithPagination[[]models.User]{}
 // @Failure			400			{object}	models.ErrorMessage{}
-func GetUserList(c *gin.Context) {
+func GetUserList(d *models.DBInstance, c *gin.Context) (statusCode int, err error) {
 	// get all query params
 	firstName := c.Query("firstName")
 	lastName := c.Query("lastName")
@@ -118,8 +113,7 @@ func GetUserList(c *gin.Context) {
 	// get users
 	var users []models.User
 
-	// dbQuery := initializers.DB.Offset(selectedOffset).Limit(selectedLimit)
-	dbQuery := initializers.DB.Limit(selectedLimit)
+	dbQuery := d.DB.Limit(selectedLimit)
 
 	if len(firstName) > 0 {
 		dbQuery = dbQuery.Where("first_name like ?", "%"+firstName+"%")
@@ -134,8 +128,7 @@ func GetUserList(c *gin.Context) {
 	result := dbQuery.Offset(selectedOffset).Find(&users)
 
 	if result.Error != nil {
-		getUserListErrorMessage(c)
-		return
+		return getUserListFailed()
 	}
 
 	// check if has next set of data
@@ -149,8 +142,7 @@ func GetUserList(c *gin.Context) {
 	// get paging
 	paging, err := helpers.GetPagination(helpers.GetFullUrl(c), hasNext)
 	if err != nil {
-		getUserListErrorMessage(c)
-		return
+		return getUserListFailed()
 	}
 
 	// return the result
@@ -158,6 +150,8 @@ func GetUserList(c *gin.Context) {
 		Data:   users,
 		Paging: *paging,
 	})
+
+	return http.StatusOK, nil
 }
 
 // GetUserDetail	godoc
@@ -171,23 +165,24 @@ func GetUserList(c *gin.Context) {
 // @Param			userId		path 		string		true	"User ID"
 // @Success			200			{object}	models.Response[models.User]{}
 // @Failure			400			{object}	models.ErrorMessage{}
-func GetUserDetail(c *gin.Context) {
+func GetUserDetail(d *models.DBInstance, c *gin.Context) (statusCode int, err error) {
 	// get id param
 	idParam := c.Param("userId")
 
 	// get the user
 	var user models.User
 
-	result := initializers.DB.Where("id = ?", idParam).First(&user)
+	result := d.DB.Where("id = ?", idParam).First(&user)
 	if result.Error != nil || user.Id == "" {
-		getUserDetailErrorMessage(c, idParam)
-		return
+		return getUserDetailFailed(idParam)
 	}
 
 	// return the result
 	c.JSON(http.StatusOK, models.Response[models.User]{
 		Data: user,
 	})
+
+	return http.StatusOK, nil
 }
 
 // UpdateUser		godoc
@@ -203,34 +198,31 @@ func GetUserDetail(c *gin.Context) {
 // @Success			200			{object}	models.Response[models.User]{}
 // @Failure			400			{object}	models.ErrorMessage{}
 // @Failure			404			{object}	models.ErrorMessage{}
-func UpdateUser(c *gin.Context) {
+func UpdateUser(d *models.DBInstance, c *gin.Context) (statusCode int, err error) {
 	// get request body and param from url
 	var reqBody models.UserUpdateRequest
 	idParam := c.Param("userId")
 
 	if err := c.Bind(&reqBody); err != nil {
-		updateUserErrorMessage(c, idParam)
-		return
+		return updateUserFailed(idParam)
 	}
 
 	// validate request body
 	validate := validation.GetValidator()
 	if err := validate.Struct(reqBody); err != nil {
-		c.JSON(http.StatusBadRequest, models.ValidationErrorMessage{
+		c.AbortWithStatusJSON(http.StatusBadRequest, models.ValidationErrorMessage{
 			Message: validation.TranslateValidationErrors(err),
 		})
-		return
 	}
 
 	// get user
 	var user models.User
 
-	result := initializers.DB.Where("id = ?", idParam).First(&user)
+	result := d.DB.Where("id = ?", idParam).First(&user)
 	if result.Error != nil || user.Id == "" {
-		c.JSON(http.StatusNotFound, models.ErrorMessage{
+		c.AbortWithStatusJSON(http.StatusNotFound, models.ErrorMessage{
 			Message: "User not found for id " + idParam,
 		})
-		return
 	}
 
 	// update the user
@@ -244,16 +236,17 @@ func UpdateUser(c *gin.Context) {
 		user.Username = reqBody.Username
 	}
 
-	result = initializers.DB.Save(&user)
+	result = d.DB.Save(&user)
 	if result.Error != nil {
-		updateUserErrorMessage(c, idParam)
-		return
+		return updateUserFailed(idParam)
 	}
 
 	// return the updated user
 	c.JSON(http.StatusOK, models.Response[models.User]{
 		Data: user,
 	})
+
+	return http.StatusOK, nil
 }
 
 // DeleteUser		godoc
@@ -268,61 +261,51 @@ func UpdateUser(c *gin.Context) {
 // @Success			200			{object}	models.Response[string]{}
 // @Failure			400			{object}	models.ErrorMessage{}
 // @Failure			404			{object}	models.ErrorMessage{}
-func DeleteUser(c *gin.Context) {
+func DeleteUser(d *models.DBInstance, c *gin.Context) (statusCode int, err error) {
 	// get id param
 	idParam := c.Param("userId")
 
 	// get user
 	var user models.User
 
-	result := initializers.DB.Where("id = ?", idParam).First(&user)
+	result := d.DB.Where("id = ?", idParam).First(&user)
 	if result.Error != nil || user.Id == "" {
-		c.JSON(http.StatusNotFound, models.ErrorMessage{
+		c.AbortWithStatusJSON(http.StatusNotFound, models.ErrorMessage{
 			Message: "User not found for id " + idParam,
 		})
-		return
 	}
 
 	// remove user
-	result = initializers.DB.Delete(&user, "id = ?", user.Id)
+	result = d.DB.Delete(&user, "id = ?", user.Id)
 	if result.Error != nil {
-		deleteUserErrorMessage(c, idParam)
-		return
+		return deleteUserFailed(idParam)
 	}
 
 	// return response
 	c.JSON(http.StatusOK, models.Response[string]{
 		Data: "success",
 	})
+
+	return http.StatusOK, nil
 }
 
 // helpers
-func userCreationErrorMessage(c *gin.Context) {
-	c.JSON(http.StatusBadRequest, models.ErrorMessage{
-		Message: "Failed to create user",
-	})
+func createUserFailed() (statusCode int, err error) {
+	return http.StatusBadRequest, errors.New("failed to create user")
 }
 
-func getUserListErrorMessage(c *gin.Context) {
-	c.JSON(http.StatusBadRequest, models.ErrorMessage{
-		Message: "Failed to get users",
-	})
+func getUserListFailed() (statusCode int, err error) {
+	return http.StatusBadRequest, errors.New("failed to get users")
 }
 
-func getUserDetailErrorMessage(c *gin.Context, id string) {
-	c.JSON(http.StatusNotFound, models.ErrorMessage{
-		Message: "Failed to get user " + id,
-	})
+func getUserDetailFailed(id string) (statusCode int, err error) {
+	return http.StatusNotFound, errors.New("failed to get user " + id)
 }
 
-func updateUserErrorMessage(c *gin.Context, id string) {
-	c.JSON(http.StatusBadRequest, models.ErrorMessage{
-		Message: "Failed to update user " + id,
-	})
+func updateUserFailed(id string) (statusCode int, err error) {
+	return http.StatusBadRequest, errors.New("failed to update user " + id)
 }
 
-func deleteUserErrorMessage(c *gin.Context, id string) {
-	c.JSON(http.StatusBadRequest, models.ErrorMessage{
-		Message: "Failed to delete user " + id,
-	})
+func deleteUserFailed(id string) (statusCode int, err error) {
+	return http.StatusBadRequest, errors.New("failed to delete user " + id)
 }

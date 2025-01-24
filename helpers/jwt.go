@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Manuel-Leleuly/simple-iam/initializers"
 	"github.com/Manuel-Leleuly/simple-iam/models"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -23,7 +22,7 @@ func CreateAccessToken(user models.User) (tokenString string, err error) {
 	return accessToken.SignedString([]byte(os.Getenv("CLIENT_SECRET")))
 }
 
-func ValidateAccessToken(accessToken string, isFromRefreshToken bool) error {
+func ValidateAccessToken(d *models.DBInstance, accessToken string, isFromRefreshToken bool) error {
 	// get the token
 	token, err := GetToken(accessToken)
 	if err != nil {
@@ -39,7 +38,7 @@ func ValidateAccessToken(accessToken string, isFromRefreshToken bool) error {
 
 		// find the user with the same id as the id stored in token
 		var user models.User
-		result := initializers.DB.First(&user, "id = ? AND email = ?", claims["id"], claims["email"])
+		result := d.DB.First(&user, "id = ? AND email = ?", claims["id"], claims["email"])
 
 		if result.Error != nil || user.Id == "" {
 			return errors.New("unauthorized access")
@@ -61,7 +60,7 @@ func CreateRefreshToken(accessToken string) (tokenString string, err error) {
 	return refreshToken.SignedString([]byte(os.Getenv("CLIENT_SECRET")))
 }
 
-func ValidateRefreshToken(refreshToken string) error {
+func ValidateRefreshToken(d *models.DBInstance, refreshToken string) error {
 	// get the token
 	token, err := GetToken(refreshToken)
 	if err != nil {
@@ -83,7 +82,7 @@ func ValidateRefreshToken(refreshToken string) error {
 			return errors.New("unauthorized access")
 		}
 
-		if err := ValidateAccessToken(accessTokenString, true); err != nil {
+		if err := ValidateAccessToken(d, accessTokenString, true); err != nil {
 			return err
 		}
 	} else {

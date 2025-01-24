@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/Manuel-Leleuly/simple-iam/helpers"
@@ -9,58 +10,50 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func RefreshToken(c *gin.Context) {
+func RefreshToken(d *models.DBInstance, c *gin.Context) (statusCode int, err error) {
 	// get refresh token from header
 	bearerToken := c.GetHeader("Authorization")
 
 	refreshTokenString, err := helpers.GetTokenStringFromHeader(bearerToken)
 	if err != nil {
-		refreshTokenErrorMessage(c)
-		return
+		return refreshTokenFailed()
 	}
 
 	refreshToken, err := helpers.GetToken(refreshTokenString)
 	if err != nil || !refreshToken.Valid {
-		refreshTokenErrorMessage(c)
-		return
+		return refreshTokenFailed()
 	}
 
 	// get access token from refresh token
 	refreshClaims, ok := refreshToken.Claims.(jwt.MapClaims)
 	if !ok {
-		refreshTokenErrorMessage(c)
-		return
+		return refreshTokenFailed()
 	}
 
 	accessTokenString, ok := (refreshClaims["token"]).(string)
 	if !ok {
-		refreshTokenErrorMessage(c)
-		return
+		return refreshTokenFailed()
 	}
 
 	accessToken, err := helpers.GetToken(accessTokenString)
 	if err != nil {
-		refreshTokenErrorMessage(c)
-		return
+		return refreshTokenFailed()
 	}
 
 	// get id and email from access token
 	accessClaims, ok := accessToken.Claims.(jwt.MapClaims)
 	if !ok {
-		refreshTokenErrorMessage(c)
-		return
+		return refreshTokenFailed()
 	}
 
 	userId, ok := (accessClaims["id"]).(string)
 	if !ok {
-		refreshTokenErrorMessage(c)
-		return
+		return refreshTokenFailed()
 	}
 
 	userEmail, ok := (accessClaims["email"]).(string)
 	if !ok {
-		refreshTokenErrorMessage(c)
-		return
+		return refreshTokenFailed()
 	}
 
 	// generate new access and refresh tokens
@@ -69,14 +62,12 @@ func RefreshToken(c *gin.Context) {
 		Email: userEmail,
 	})
 	if err != nil {
-		refreshTokenErrorMessage(c)
-		return
+		return refreshTokenFailed()
 	}
 
 	newRefreshToken, err := helpers.CreateRefreshToken(newAccessToken)
 	if err != nil {
-		refreshTokenErrorMessage(c)
-		return
+		return refreshTokenFailed()
 	}
 
 	// return the result
@@ -87,11 +78,11 @@ func RefreshToken(c *gin.Context) {
 			RefreshToken: newRefreshToken,
 		},
 	})
+
+	return http.StatusOK, nil
 }
 
 // helpers
-func refreshTokenErrorMessage(c *gin.Context) {
-	c.JSON(http.StatusBadRequest, models.ErrorMessage{
-		Message: "invalid refresh token",
-	})
+func refreshTokenFailed() (statusCode int, err error) {
+	return http.StatusBadRequest, errors.New("invalid refresh token")
 }

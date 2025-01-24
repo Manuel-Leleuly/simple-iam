@@ -2,6 +2,8 @@ package models
 
 import (
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 // structs that will be stored in DB
@@ -20,3 +22,6 @@ type NameRequest struct {
 	FirstName string `json:"first_name" validate:"required,name"`
 	LastName  string `json:"last_name" validate:"omitempty,name"`
 }
+
+// helpers
+type ApiFunc func(db *DBInstance, c *gin.Context) (statusCode int, err error)
