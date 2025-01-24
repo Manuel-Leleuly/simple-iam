@@ -34,9 +34,12 @@ func CreateUser(d *models.DBInstance, c *gin.Context) (statusCode int, err error
 	// validate request body
 	validate := validation.GetValidator()
 	if err := validate.Struct(reqBody); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, models.ValidationErrorMessage{
+		c.JSON(http.StatusBadRequest, models.ValidationErrorMessage{
 			Message: validation.TranslateValidationErrors(err),
 		})
+
+		// arbitrary return so that the function stops
+		return http.StatusBadRequest, nil
 	}
 
 	// check if email is already used
@@ -210,9 +213,12 @@ func UpdateUser(d *models.DBInstance, c *gin.Context) (statusCode int, err error
 	// validate request body
 	validate := validation.GetValidator()
 	if err := validate.Struct(reqBody); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, models.ValidationErrorMessage{
+		c.JSON(http.StatusBadRequest, models.ValidationErrorMessage{
 			Message: validation.TranslateValidationErrors(err),
 		})
+
+		// arbitrary return so that the function stops
+		return http.StatusBadRequest, nil
 	}
 
 	// get user
@@ -220,9 +226,7 @@ func UpdateUser(d *models.DBInstance, c *gin.Context) (statusCode int, err error
 
 	result := d.DB.Where("id = ?", idParam).First(&user)
 	if result.Error != nil || user.Id == "" {
-		c.AbortWithStatusJSON(http.StatusNotFound, models.ErrorMessage{
-			Message: "User not found for id " + idParam,
-		})
+		return http.StatusNotFound, errors.New("user not found for id " + idParam)
 	}
 
 	// update the user
@@ -270,9 +274,7 @@ func DeleteUser(d *models.DBInstance, c *gin.Context) (statusCode int, err error
 
 	result := d.DB.Where("id = ?", idParam).First(&user)
 	if result.Error != nil || user.Id == "" {
-		c.AbortWithStatusJSON(http.StatusNotFound, models.ErrorMessage{
-			Message: "User not found for id " + idParam,
-		})
+		return http.StatusNotFound, errors.New("user not found for id " + idParam)
 	}
 
 	// remove user
