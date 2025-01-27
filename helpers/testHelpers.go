@@ -104,7 +104,7 @@ func CreateTestUser(d *models.DBInstance) error {
 
 func DeleteAllTestUsers(d *models.DBInstance) error {
 	var users []models.User
-	result := d.DB.Raw("TRUNCATE USERS").Scan(&users)
+	result := d.DB.Raw("TRUNCATE users").Scan(&users)
 	if result.Error != nil {
 		return result.Error
 	}
