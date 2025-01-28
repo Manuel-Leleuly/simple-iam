@@ -11,7 +11,7 @@ This is just a simple IAM application made with Go. I'm not even sure if I can c
 If you want to run this project locally, you can do so by first installing all the dependencies required:
 
 ```
-go get .
+go mod download
 ```
 
 Then, start the development environment by running the following command:
@@ -24,15 +24,9 @@ go run main.go
 go run .
 ```
 
-### Production (TBD)
+### Local (with docker)
 
-If you want to run the production version of this project locally, you can do so by first building it:
-
-```
-make build
-```
-
-And then starting the environment by running the following command:
+If you want to run this project using docker, you can do so by running the following command:
 
 ```
 make run
@@ -42,10 +36,11 @@ make run
 
 - Go (this project was created using Go 1.23.3)
 - MySQL
-- Docker
-- Docker Compose
-- GNU Make
 - IDE
+- optional
+  - Docker
+  - Docker Compose
+  - GNU Make
 
 ## Environment variables
 

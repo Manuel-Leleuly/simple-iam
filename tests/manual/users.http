@@ -6,7 +6,7 @@ Accept: application/json
 {
     "first_name": "John",
     "last_name": "Doe",
-    "username": "john-doe",
+    "username": "johndoe",
     "email": "johndoe@example.com",
     "password": "johndoe123"
 }

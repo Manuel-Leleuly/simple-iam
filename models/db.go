@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -86,7 +87,7 @@ func (d *DBInstance) MakeHTTPHandleFunc(f ApiFunc) gin.HandlerFunc {
 
 // helpers
 func getGORMDatabaseUrl(dbName string, params map[string]string) string {
-	var dbUrl = os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@tcp(" + os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT") + ")/" + dbName
+	dbUrl := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), dbName)
 	queryParams := url.Values{}
 
 	for k, v := range params {
