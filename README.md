@@ -34,13 +34,14 @@ make run
 
 ## Development Requirements
 
-- Go (this project was created using Go 1.23.3)
-- MySQL
-- IDE
-- optional
+- IDE (VSCode, GoLand, etc.)
+- With Docker
   - Docker
   - Docker Compose
   - GNU Make
+- Without Docker (versions used at the time the project was created)
+  - Go (1.23.3)
+  - MySQL (8.4.4)
 
 ## Environment variables
 
