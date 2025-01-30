@@ -12,7 +12,10 @@ import (
 const BasePath string = "/iam/v1"
 
 func GetRoutes(d *models.DBInstance) *gin.Engine {
-	router := gin.Default()
+	router := gin.New()
+
+	// use custom logger but keep the default recovery
+	router.Use(middlewares.LoggerMiddleware, gin.Recovery())
 
 	// swagger route
 	router.GET("/iam/apidocs/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

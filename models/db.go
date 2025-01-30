@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -29,9 +30,13 @@ func (d *DBInstance) ConnectToDB(dbName string) error {
 		"loc":       "Local",
 	}))
 
-	db, err := gorm.Open(dialect, &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	})
+	gormConfig := &gorm.Config{}
+
+	if strings.ToLower(os.Getenv("ENABLE_DB_LOGGER")) == "true" {
+		gormConfig.Logger = logger.Default.LogMode(logger.Info)
+	}
+
+	db, err := gorm.Open(dialect, gormConfig)
 	if err != nil {
 		return err
 	}
