@@ -77,7 +77,6 @@ func (d *DBInstance) CheckDBConnection(c *gin.Context) {
 	} else {
 		c.Next()
 	}
-
 }
 
 func (d *DBInstance) MakeHTTPHandleFunc(f ApiFunc) gin.HandlerFunc {

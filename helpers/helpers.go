@@ -10,13 +10,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetFullUrl(c *gin.Context) string {
+func GetBaseUrl(c *gin.Context) string {
 	scheme := "http"
 	if c.Request.TLS != nil {
 		scheme = "https"
 	}
 
-	return scheme + "://" + c.Request.Host + c.Request.URL.String()
+	return scheme + "://" + c.Request.Host
+}
+
+func GetFullUrl(c *gin.Context) string {
+	return GetBaseUrl(c) + c.Request.URL.String()
 }
 
 func GetPagination(fullUrl string, hasNext bool) (*models.Pagination, error) {
@@ -82,4 +86,16 @@ func GetPagination(fullUrl string, hasNext bool) (*models.Pagination, error) {
 	}
 
 	return &models.Pagination{Next: next, Prev: prev}, nil
+}
+
+// user helpers
+func ConvertUserToUserResponse(data models.User) models.UserResponse {
+	return models.UserResponse{
+		Id:        data.Id,
+		Name:      data.Name,
+		Username:  data.Username,
+		Email:     data.Email,
+		CreatedAt: data.CreatedAt,
+		UpdatedAt: data.UpdatedAt,
+	}
 }

@@ -33,7 +33,7 @@ func TestGetAllUser(t *testing.T) {
 	body, err := io.ReadAll(response.Body)
 	assert.Nil(t, err)
 
-	var responseBody models.WithPagination[[]models.User]
+	var responseBody models.WithPagination[[]models.UserResponse]
 	err = json.Unmarshal(body, &responseBody)
 	assert.Nil(t, err)
 

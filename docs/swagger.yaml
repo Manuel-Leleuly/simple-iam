@@ -1,0 +1,300 @@
+definitions:
+  models.ErrorMessage:
+    properties:
+      message:
+        type: string
+    type: object
+  models.Login:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  models.Pagination:
+    properties:
+      next:
+        type: string
+      prev:
+        type: string
+    type: object
+  models.Response-models_TokenResponse:
+    properties:
+      data:
+        $ref: '#/definitions/models.TokenResponse'
+    type: object
+  models.Response-models_UserResponse:
+    properties:
+      data:
+        $ref: '#/definitions/models.UserResponse'
+    type: object
+  models.Response-string:
+    properties:
+      data:
+        type: string
+    type: object
+  models.TokenResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+      status:
+        type: string
+    type: object
+  models.UserRequest:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - first_name
+    - username
+    type: object
+  models.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  models.UserUpdateRequest:
+    properties:
+      first_name:
+        type: string
+      last_name:
+        type: string
+      username:
+        type: string
+    type: object
+  models.WithPagination-array_models_UserResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.UserResponse'
+        type: array
+      paging:
+        $ref: '#/definitions/models.Pagination'
+    type: object
+host: localhost:3005
+info:
+  contact: {}
+  description: A simple IAM made by me
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Simple IAM
+  version: "1.0"
+paths:
+  /iam/v1/login:
+    post:
+      consumes:
+      - application/json
+      description: Login
+      parameters:
+      - description: Request Body
+        in: body
+        name: requestBody
+        required: true
+        schema:
+          $ref: '#/definitions/models.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response-models_TokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorMessage'
+      summary: Login
+      tags:
+      - Auth
+  /iam/v1/users:
+    get:
+      consumes:
+      - application/json
+      description: Get all users from database
+      parameters:
+      - description: search by first name
+        in: query
+        name: firstName
+        type: string
+      - description: search by last name
+        in: query
+        name: lastName
+        type: string
+      - description: search by email
+        in: query
+        name: email
+        type: string
+      - description: default to 0
+        in: query
+        name: offset
+        type: string
+      - description: default to 10
+        in: query
+        name: limit
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.WithPagination-array_models_UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorMessage'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user list
+      tags:
+      - User
+    post:
+      consumes:
+      - application/json
+      description: Create a user
+      parameters:
+      - description: Request Body
+        in: body
+        name: requestBody
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response-models_UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorMessage'
+      summary: Create user
+      tags:
+      - User
+  /iam/v1/users/{userId}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response-string'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorMessage'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorMessage'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete user
+      tags:
+      - User
+    get:
+      consumes:
+      - application/json
+      description: Get the details of a user
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response-models_UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorMessage'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user detail
+      tags:
+      - User
+    patch:
+      consumes:
+      - application/json
+      description: Update the user
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      - description: Request Body
+        in: body
+        name: requestBody
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response-models_UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorMessage'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorMessage'
+      security:
+      - ApiKeyAuth: []
+      summary: Update user
+      tags:
+      - User
+securityDefinitions:
+  ApiKeyAuth:
+    description: use access token generated by the login endpoint
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

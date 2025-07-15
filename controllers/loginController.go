@@ -52,6 +52,9 @@ func Login(d *models.DBInstance, c *gin.Context) (statusCode int, err error) {
 		return failedLoginError()
 	}
 
+	// set the current logged in user (me) into gin context
+	c.Set("me", user)
+
 	// send the result
 	c.JSON(http.StatusOK, models.Response[models.TokenResponse]{
 		Data: models.TokenResponse{

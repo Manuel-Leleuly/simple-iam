@@ -21,7 +21,7 @@ import (
 // @Accept			json
 // @Produce			json
 // @Param			requestBody	body		models.UserRequest{}		true	"Request Body"
-// @Success			200			{object}	models.Response[models.User]{}
+// @Success			200			{object}	models.Response[models.UserResponse]{}
 // @Failure			400			{object}	models.ErrorMessage{}
 func CreateUser(d *models.DBInstance, c *gin.Context) (statusCode int, err error) {
 	// Get data from request body
@@ -73,8 +73,8 @@ func CreateUser(d *models.DBInstance, c *gin.Context) (statusCode int, err error
 	}
 
 	// Send the result
-	c.JSON(http.StatusOK, gin.H{
-		"data": newUser,
+	c.JSON(http.StatusOK, models.Response[models.UserResponse]{
+		Data: helpers.ConvertUserToUserResponse(newUser),
 	})
 
 	return http.StatusOK, nil
@@ -93,7 +93,7 @@ func CreateUser(d *models.DBInstance, c *gin.Context) (statusCode int, err error
 // @Param			email		query		string		false	"search by email"
 // @Param			offset		query		string		false	"default to 0"
 // @Param			limit		query		string		false	"default to 10"
-// @Success			200			{object}	models.WithPagination[[]models.User]{}
+// @Success			200			{object}	models.WithPagination[[]models.UserResponse]{}
 // @Failure			400			{object}	models.ErrorMessage{}
 func GetUserList(d *models.DBInstance, c *gin.Context) (statusCode int, err error) {
 	// get all query params
@@ -116,7 +116,13 @@ func GetUserList(d *models.DBInstance, c *gin.Context) (statusCode int, err erro
 	// get users
 	var users []models.User
 
-	dbQuery := d.DB.Limit(selectedLimit)
+	/*
+		Add an extra data to check whether there's a next page or not
+		this is to avoid calling DB for the 2nd time
+
+		This extra data will NOT be included in the response
+	*/
+	dbQuery := d.DB.Limit(selectedLimit + 1)
 
 	if len(firstName) > 0 {
 		dbQuery = dbQuery.Where("first_name like ?", "%"+firstName+"%")
@@ -134,13 +140,7 @@ func GetUserList(d *models.DBInstance, c *gin.Context) (statusCode int, err erro
 		return getUserListFailed()
 	}
 
-	// check if has next set of data
-	var user models.User
-	hasNext := true
-	result = dbQuery.Offset(selectedOffset + selectedLimit + 1).First(&user)
-	if result.Error != nil || user.Id == "" {
-		hasNext = false
-	}
+	hasNext := len(users) > selectedLimit+1
 
 	// get paging
 	paging, err := helpers.GetPagination(helpers.GetFullUrl(c), hasNext)
@@ -149,8 +149,16 @@ func GetUserList(d *models.DBInstance, c *gin.Context) (statusCode int, err erro
 	}
 
 	// return the result
-	c.JSON(http.StatusOK, models.WithPagination[[]models.User]{
-		Data:   users,
+	var userResponses []models.UserResponse
+	for index, user := range users {
+		if index >= selectedLimit {
+			break
+		}
+		userResponses = append(userResponses, helpers.ConvertUserToUserResponse(user))
+	}
+
+	c.JSON(http.StatusOK, models.WithPagination[[]models.UserResponse]{
+		Data:   userResponses,
 		Paging: *paging,
 	})
 
@@ -166,7 +174,7 @@ func GetUserList(d *models.DBInstance, c *gin.Context) (statusCode int, err erro
 // @Accept			json
 // @Produce			json
 // @Param			userId		path 		string		true	"User ID"
-// @Success			200			{object}	models.Response[models.User]{}
+// @Success			200			{object}	models.Response[models.UserResponse]{}
 // @Failure			400			{object}	models.ErrorMessage{}
 func GetUserDetail(d *models.DBInstance, c *gin.Context) (statusCode int, err error) {
 	// get id param
@@ -181,8 +189,8 @@ func GetUserDetail(d *models.DBInstance, c *gin.Context) (statusCode int, err er
 	}
 
 	// return the result
-	c.JSON(http.StatusOK, models.Response[models.User]{
-		Data: user,
+	c.JSON(http.StatusOK, models.Response[models.UserResponse]{
+		Data: helpers.ConvertUserToUserResponse(user),
 	})
 
 	return http.StatusOK, nil
@@ -198,7 +206,7 @@ func GetUserDetail(d *models.DBInstance, c *gin.Context) (statusCode int, err er
 // @Produce			json
 // @Param			userId		path 		string							true	"User ID"
 // @Param			requestBody	body		models.UserUpdateRequest{}		true	"Request Body"
-// @Success			200			{object}	models.Response[models.User]{}
+// @Success			200			{object}	models.Response[models.UserResponse]{}
 // @Failure			400			{object}	models.ErrorMessage{}
 // @Failure			404			{object}	models.ErrorMessage{}
 func UpdateUser(d *models.DBInstance, c *gin.Context) (statusCode int, err error) {

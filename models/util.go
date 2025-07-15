@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // structs that will be stored in DB
@@ -15,6 +16,8 @@ type Name struct {
 type TimeRecord struct {
 	CreatedAt time.Time `gorm:"column:created_at;autoCreateTime;not null;<-create" json:"created_at"`
 	UpdatedAt time.Time `gorm:"column:updated_at;autoCreateTime;not null;autoUpdateTime" json:"updated_at"`
+	// Soft delete
+	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
 }
 
 // structs that will NOT be stored in DB

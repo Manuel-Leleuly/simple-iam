@@ -107,7 +107,7 @@ func GetTokenStringFromHeader(bearerToken string) (string, error) {
 		return "", errors.New("invalid bearer token")
 	}
 
-	tokenString := strings.ReplaceAll(bearerToken, "Bearer ", "")
+	tokenString := strings.TrimPrefix(bearerToken, "Bearer ")
 
 	return tokenString, nil
 }

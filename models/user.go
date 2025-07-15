@@ -2,6 +2,7 @@ package models
 
 import (
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -40,4 +41,14 @@ type UserUpdateRequest struct {
 	FirstName string `json:"first_name" validate:"omitempty,name"`
 	LastName  string `json:"last_name" validate:"omitempty,name"`
 	Username  string `json:"username" validate:"omitempty,username"`
+}
+
+// response
+type UserResponse struct {
+	Id string `json:"id"`
+	Name
+	Username  string    `json:"username"`
+	Email     string    `json:"email"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
